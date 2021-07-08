@@ -1,0 +1,51 @@
+{
+  "name": "serverless-s3-cleaner",
+  "version": "0.0.1",
+  "description": "Serverless Framework plugin that empties S3 buckets before removing a stack",
+  "main": "dist/index.js",
+  "scripts": {
+    "prebuild": "npm run lint",
+    "build": "tsc --b tsconfig.app.json",
+    "lint": "eslint \"**/*.ts\" --ignore-path .gitignore",
+    "clean": "rimraf out-tsc",
+    "pretest:build": "npm run clean",
+    "test:build": "tsc --b tsconfig.spec.json",
+    "test:exec": "jasmine --config=jasmine.json",
+    "test": "npm run test:build && nyc npm run test:exec",
+    "test:cov": "npm run test:build && nyc --reporter=html --reporter=text-summary npm run test:exec"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/coyoteecd/serverless-s3-cleaner.git"
+  },
+  "keywords": [
+    "serverless",
+    "serverless-plugin",
+    "aws",
+    "git"
+  ],
+  "author": "coyoteecd",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/coyoteecd/serverless-s3-cleaner/issues"
+  },
+  "homepage": "https://github.com/coyoteecd/serverless-s3-cleaner#readme",
+  "devDependencies": {
+    "@types/jasmine": "^3.7.8",
+    "@types/node": "^12.20.16",
+    "@types/serverless": "^1.78.31",
+    "@typescript-eslint/eslint-plugin": "^2.34.0",
+    "@typescript-eslint/parser": "^2.34.0",
+    "eslint": "^7.30.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-plugin-import": "^2.23.4",
+    "jasmine": "^3.8.0",
+    "nyc": "^15.1.0",
+    "rimraf": "^3.0.2",
+    "serverless": "^1.83.3",
+    "typescript": "^3.9.10"
+  },
+  "peerDependencies": {
+    "serverless": "^1.60.0"
+  }
+}

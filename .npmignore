@@ -1,0 +1,20 @@
+node_modules/
+
+# build and test output
+.vscode/
+out-tsc/
+.nyc_output/
+coverage/
+
+# source code
+src/
+test/
+
+# config files
+.editorconfig
+.eslintrc.js
+.git*
+.travis.yml
+*.code-workspace
+tsconfig*.json
+jasmine.json

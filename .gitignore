@@ -1,0 +1,9 @@
+# node_modules
+node_modules/
+
+# build and test output
+.vscode/
+out-tsc/
+.nyc_output/
+coverage/
+dist/

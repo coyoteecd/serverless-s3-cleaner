@@ -1,0 +1,8 @@
+# Auto detect text files and perform EOL normalization
+* text=auto
+
+# Custom
+*.ts      text
+*.md      text
+*.js      text
+*.json    text

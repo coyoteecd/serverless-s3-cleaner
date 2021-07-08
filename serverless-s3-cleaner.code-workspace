@@ -1,0 +1,36 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"files.eol": "auto",
+		"files.trimTrailingWhitespace": true
+	},
+	"tasks": {
+		"version": "2.0.0",
+		"tasks": [
+			{
+				"label": "Compile Tests",
+				"type": "shell",
+				"command": "npm run test:build",
+				"group": "build"
+			}
+		]
+	},
+	"launch": {
+		"configurations": [
+			{
+				"type": "node",
+				"request": "launch",
+				"name": "Debug Tests",
+				"program": "${workspaceRoot}\\node_modules\\jasmine\\bin\\jasmine.js",
+				"args": ["--config=jasmine.json"],
+				"internalConsoleOptions": "openOnSessionStart",
+				"autoAttachChildProcesses": true,
+				"preLaunchTask": "Compile Tests"
+			}
+		]
+	}
+}
