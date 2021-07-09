@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import type {
+  DeleteObjectsOutput,
   DeleteObjectsRequest,
   HeadBucketRequest,
   ListObjectVersionsOutput, ListObjectVersionsRequest,
@@ -40,6 +41,10 @@ export default class ServerlessS3Cleaner implements Plugin {
     this.serverless.cli.log(`S3Cleaner: ${chalk.yellow(message)}`);
   }
 
+  private logError(message: string): void {
+    this.serverless.cli.log(chalk.red(`S3Cleaner: ${message}`));
+  }
+
   private async remove(isDeploying: boolean): Promise<void> {
     const config = this.loadConfig();
     let bucketsToEmpty = isDeploying ? config.bucketsToCleanOnDeploy : config.buckets;
@@ -73,7 +78,7 @@ export default class ServerlessS3Cleaner implements Plugin {
       if (exists) {
         existingBuckets.push(bucket);
       } else {
-        this.log(`${bucket} not found or you do not have permissions, skipping...`);
+        this.logError(`${bucket} not found or you do not have permissions, skipping...`);
       }
     }
 
@@ -82,7 +87,7 @@ export default class ServerlessS3Cleaner implements Plugin {
       .listBucketKeys(bucket)
       .then(keys => this.deleteObjects(bucket, keys))
       .then(() => this.log(`bucket ${bucket} successfully emptied`))
-      .catch(err => this.log(`bucket ${bucket} cannot be emptied: ${err}`)));
+      .catch(err => this.logError(`bucket ${bucket} cannot be emptied: ${err}`)));
 
     await Promise.all(removePromises);
   }
