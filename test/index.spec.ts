@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
-import { DeleteObjectsRequest, ListObjectVersionsOutput, ObjectIdentifier } from 'aws-sdk/clients/s3';
+import { DeleteObjectsOutput, DeleteObjectsRequest, ListObjectVersionsOutput, ObjectIdentifier } from 'aws-sdk/clients/s3';
 import prompt from 'prompt';
 import Serverless from 'serverless';
 import Aws from 'serverless/plugins/aws/provider/awsProvider';
@@ -116,7 +116,7 @@ describe('ServerlessS3Cleaner', () => {
       }));
     });
 
-    it('should log a message when emptying an existing bucket fails', async () => {
+    it('should log a message when listing the contents of an existing bucket fails', async () => {
       const { requestSpy, serverless } = stubServerlessInstance({
         buckets: ['b1', 'b2'],
       });
@@ -144,6 +144,31 @@ describe('ServerlessS3Cleaner', () => {
         Bucket: 'b2'
       }));
       expect(serverless.cli.log).toHaveBeenCalledWith(jasmine.stringMatching(`cannot be emptied: ${errorMsg}`));
+    });
+
+    it('should log a message when deleting bucket objects returns an error response', async () => {
+      const { requestSpy, serverless } = stubServerlessInstance({
+        buckets: ['b1'],
+      });
+      const plugin = new ServerlessS3Cleaner(serverless);
+
+      requestSpy.withArgs('S3', 'listObjectVersions', jasmine.anything()).and.resolveTo({
+        DeleteMarkers: [
+          { Key: 'obj1', VersionId: 'v1' },
+          { Key: 'obj2', VersionId: 'v2' }
+        ]
+      } as ListObjectVersionsOutput);
+      requestSpy.withArgs('S3', 'deleteObjects', jasmine.anything()).and.resolveTo({
+        Errors: [{
+          Key: 'obj2',
+          Message: 'bad object'
+        }]
+      } as DeleteObjectsOutput);
+
+      const removeFn = plugin.hooks['before:remove:remove'];
+      await expectAsync(removeFn()).toBeResolved();
+
+      expect(serverless.cli.log).toHaveBeenCalledWith(jasmine.stringMatching('cannot be emptied: Error: obj2 - bad object'));
     });
 
     it('should skip buckets that do not exist', async () => {

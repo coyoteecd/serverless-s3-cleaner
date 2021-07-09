@@ -107,7 +107,16 @@ export default class ServerlessS3Cleaner implements Plugin {
       });
     }
 
-    await Promise.all(params.map(param => this.provider.request('S3', 'deleteObjects', param)));
+    const deleteResults: DeleteObjectsOutput[] = await Promise.all(
+      params.map(param => this.provider.request('S3', 'deleteObjects', param))
+    );
+
+    // to avoid dumping too many details in the output, we choose to list the first error message available, if any
+    const firstErrorResult = deleteResults.find(dr => dr.Errors && dr.Errors.length > 0);
+    if (firstErrorResult) {
+      const errInfo = firstErrorResult.Errors![0];
+      throw new Error(`${errInfo.Key} - ${errInfo.Message}`);
+    }
   }
 
   private async listBucketKeys(bucketName: string): Promise<ObjectIdentifierList> {
