@@ -48,7 +48,7 @@
     "typescript": "^3.9.10"
   },
   "peerDependencies": {
-    "serverless": "^1.60.0"
+    "serverless": "^1.60.0 || ^2.0.0"
   },
   "dependencies": {
     "chalk": "^4.1.1",
