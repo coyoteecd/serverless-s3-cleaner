@@ -38,11 +38,11 @@ export default class ServerlessS3Cleaner implements Plugin {
   }
 
   private log(message: string): void {
-    this.serverless.cli.log(`S3Cleaner: ${chalk.yellow(message)}`);
+    this.serverless.cli.log(`serverless-s3-cleaner: ${chalk.yellow(message)}`);
   }
 
   private logError(message: string): void {
-    this.serverless.cli.log(chalk.red(`S3Cleaner: ${message}`));
+    this.serverless.cli.log(chalk.red(`serverless-s3-cleaner: ${message}`));
   }
 
   private async remove(isDeploying: boolean): Promise<void> {
@@ -86,8 +86,8 @@ export default class ServerlessS3Cleaner implements Plugin {
     const removePromises = existingBuckets.map(bucket => this
       .listBucketKeys(bucket)
       .then(keys => this.deleteObjects(bucket, keys))
-      .then(() => this.log(`bucket ${bucket} successfully emptied`))
-      .catch(err => this.logError(`bucket ${bucket} cannot be emptied: ${err}`)));
+      .then(() => this.log(`${bucket} successfully emptied`))
+      .catch(err => this.logError(`${bucket} cannot be emptied. ${err}`)));
 
     await Promise.all(removePromises);
   }

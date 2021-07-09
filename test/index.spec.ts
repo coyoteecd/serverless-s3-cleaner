@@ -143,7 +143,7 @@ describe('ServerlessS3Cleaner', () => {
       expect(requestSpy).not.toHaveBeenCalledWith('S3', 'deleteObjects', jasmine.objectContaining<DeleteObjectsRequest>({
         Bucket: 'b2'
       }));
-      expect(serverless.cli.log).toHaveBeenCalledWith(jasmine.stringMatching(`cannot be emptied: ${errorMsg}`));
+      expect(serverless.cli.log).toHaveBeenCalledWith(jasmine.stringMatching(`cannot be emptied. ${errorMsg}`));
     });
 
     it('should log a message when deleting bucket objects returns an error response', async () => {
@@ -168,7 +168,7 @@ describe('ServerlessS3Cleaner', () => {
       const removeFn = plugin.hooks['before:remove:remove'];
       await expectAsync(removeFn()).toBeResolved();
 
-      expect(serverless.cli.log).toHaveBeenCalledWith(jasmine.stringMatching('cannot be emptied: Error: obj2 - bad object'));
+      expect(serverless.cli.log).toHaveBeenCalledWith(jasmine.stringMatching('cannot be emptied. Error: obj2 - bad object'));
     });
 
     it('should skip buckets that do not exist', async () => {
