@@ -21,9 +21,44 @@ Add the following to your `serverless.yml`:
 ```yml
 plugins:
   - serverless-s3-cleaner
+
+custom:
+  serverless-s3-cleaner:
+    # (optional) Whether to prompt before emptying a bucket. Default is 'false'.
+    prompt: false
+
+    # Names of buckets to remove before a stack is removed, or via 'sls s3clean' command
+    buckets:
+      - bucketName1
+      - bucketName2
+
+    # (optional) Buckets to remove before a stack is deployed.
+    bucketsToRemoveOnDeploy:
+      - oldBucketName
 ```
 
-This plugin does not have any configuration options (yet).
+When removing a Serverless Framework stack, this plugin automatically empties the buckets listed under `buckets` option.
+
+When deploying a Serverless Framework stack, this plugin automatically empties the buckets listed under `bucketsToRemoveOnDeploy` option.
+Use this when renaming or removing a bucket (put here the old bucket name) to avoid deployment errors when CloudFormation tries to remove the old bucket.
+
+You can also empty a bucket explicitly by running:
+
+```
+sls s3remove
+```
+
+### Versioning
+
+Buckets with versioning enabled are supported. When emptying a bucket, all object versions and delete markers are deleted.
+
+### IAM Permissions
+
+The plugin requires the following permissions to be given to the role that Serverless runs under, for all the affected buckets:
+
+- s3:ListBucket
+- s3:ListBucketVersions
+- s3:DeleteObject
 
 [//]: # (Note: icon sources seem to be random. It's just because shields.io is extremely slow so using alternatives whenever possible)
 [icon-serverless]: http://public.serverless.com/badges/v3.svg

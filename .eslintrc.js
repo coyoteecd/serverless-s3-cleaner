@@ -39,9 +39,13 @@ module.exports = {
     'import/extensions': 'off',
     'import/no-unresolved': 'off',
 
-    "@typescript-eslint/explicit-function-return-type": ["error", {
-      "allowExpressions": true,
-      "allowTypedFunctionExpressions": true
+    // meh
+    'no-restricted-syntax': 'off',
+    'no-plusplus': 'off',
+
+    '@typescript-eslint/explicit-function-return-type': ['error', {
+      allowExpressions: true,
+      allowTypedFunctionExpressions: true
     }]
   }
 };
