@@ -59,6 +59,7 @@ The plugin requires the following permissions to be given to the role that Serve
 - s3:ListBucket
 - s3:ListBucketVersions
 - s3:DeleteObject
+- s3:DeleteObjectVersion
 
 [//]: # (Note: icon sources seem to be random. It's just because shields.io is extremely slow so using alternatives whenever possible)
 [icon-serverless]: http://public.serverless.com/badges/v3.svg
