@@ -43,6 +43,7 @@ module.exports = {
     'no-restricted-syntax': 'off',
     'no-plusplus': 'off',
     'object-curly-newline': 'off',
+    'no-use-before-define': 'off',
 
     '@typescript-eslint/explicit-function-return-type': ['error', {
       allowExpressions: true,
