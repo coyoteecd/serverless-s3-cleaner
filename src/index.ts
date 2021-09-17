@@ -18,7 +18,7 @@ export default class ServerlessS3Cleaner implements Plugin {
   private provider: Aws;
 
   constructor(private readonly serverless: Serverless) {
-    this.serverless = serverless;
+
     this.provider = this.serverless.getProvider('aws');
 
     this.commands = {
