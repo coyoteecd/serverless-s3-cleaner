@@ -33,13 +33,13 @@ custom:
       - bucketName2
 
     # (optional) Buckets to remove before a stack is deployed.
-    bucketsToRemoveOnDeploy:
+    bucketsToCleanOnDeploy:
       - oldBucketName
 ```
 
 When removing a Serverless Framework stack, this plugin automatically empties the buckets listed under `buckets` option.
 
-When deploying a Serverless Framework stack, this plugin automatically empties the buckets listed under `bucketsToRemoveOnDeploy` option.
+When deploying a Serverless Framework stack, this plugin automatically empties the buckets listed under `bucketsToCleanOnDeploy` option.
 Use this when renaming or removing a bucket (put here the old bucket name) to avoid deployment errors when CloudFormation tries to remove the old bucket.
 
 You can also empty a bucket explicitly by running:
