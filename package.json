@@ -1,6 +1,6 @@
 {
   "name": "serverless-s3-cleaner",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Serverless Framework plugin that empties S3 buckets before removing a stack",
   "main": "dist/index.js",
   "scripts": {
