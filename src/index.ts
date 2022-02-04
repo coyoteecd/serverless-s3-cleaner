@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
+import type { JSONSchemaType } from 'ajv';
 import type {
   DeleteObjectsOutput,
   DeleteObjectsRequest,
@@ -17,10 +18,34 @@ export default class ServerlessS3Cleaner implements Plugin {
   private provider: Aws;
   private log: Logging['log'];
 
+  private configSchema: JSONSchemaType<ServerlessS3CleanerConfig> = {
+    type: 'object',
+    properties: {
+      prompt: { type: 'boolean', nullable: true, default: false },
+      buckets: {
+        type: 'array', uniqueItems: true, items: { type: 'string' }, nullable: true
+      },
+      bucketsToCleanOnDeploy: {
+        type: 'array', uniqueItems: true, items: { type: 'string' }, nullable: true
+      },
+    },
+    additionalProperties: false,
+    anyOf: [
+      { required: ['buckets'] },
+      { required: ['bucketsToCleanOnDeploy'] }
+    ]
+  };
+
   constructor(private readonly serverless: Serverless, _options, logging: Logging) {
 
     this.provider = this.serverless.getProvider('aws');
     this.log = logging.log;
+    this.serverless.configSchemaHandler.defineCustomProperties({
+      type: 'object',
+      properties: {
+        'serverless-s3-cleaner': this.configSchema
+      }
+    });
 
     this.commands = {
       s3remove: {

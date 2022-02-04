@@ -8,10 +8,23 @@ import ServerlessS3Cleaner from '../src/index';
 
 describe('ServerlessS3Cleaner', () => {
 
-  it('should create the plugin', () => {
+  it('should create the plugin and set up configuration schema', () => {
     const { serverless } = stubServerlessInstance();
     const plugin = new ServerlessS3Cleaner(serverless, {}, stubLogging());
     expect(plugin).toBeTruthy();
+
+    expect(serverless.configSchemaHandler.defineCustomProperties).toHaveBeenCalledWith({
+      type: 'object',
+      properties: {
+        'serverless-s3-cleaner': jasmine.objectContaining({
+          properties: jasmine.objectContaining({
+            prompt: jasmine.anything(),
+            buckets: jasmine.anything(),
+            bucketsToCleanOnDeploy: jasmine.anything()
+          })
+        })
+      }
+    });
   });
 
   it('should fail when neither buckets nor bucketsToCleanOnDeploy is configured', async () => {
