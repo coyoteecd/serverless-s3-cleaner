@@ -10,9 +10,19 @@ Replacement for [serverless-s3-remover](https://github.com/sinofseven/serverless
 
 ## Installation
 
-```
+```sh
 npm install serverless-s3-cleaner --save-dev
 ```
+
+### Compatibility with Serverless Framework
+
+Version 1.0.2 is compatible with Serverless Framework v3, but it uses the legacy logging interface. Version 2.0.0 and later uses the [new logging interface](https://www.serverless.com/framework/docs/guides/plugins/cli-output).
+
+|serverless-s3-cleaner|Serverless Framework|
+|---|---|
+|≤ v1.0.1|v1.x, v2.x|
+|v1.0.2|v1.x, v2.x, v3.x|
+|≥ v2.0.0|v3.x|
 
 ## Usage
 
@@ -44,7 +54,7 @@ Use this when renaming or removing a bucket (put here the old bucket name) to av
 
 You can also empty a bucket explicitly by running:
 
-```
+```sh
 sls s3remove
 ```
 

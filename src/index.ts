@@ -6,20 +6,21 @@ import type {
   ListObjectVersionsOutput, ListObjectVersionsRequest,
   ObjectIdentifierList
 } from 'aws-sdk/clients/s3';
-import chalk from 'chalk';
 import prompt from 'prompt';
 import Serverless from 'serverless';
-import Plugin from 'serverless/classes/Plugin';
+import Plugin, { Logging } from 'serverless/classes/Plugin';
 import Aws from 'serverless/plugins/aws/provider/awsProvider';
 
 export default class ServerlessS3Cleaner implements Plugin {
   public commands: Plugin.Commands;
   public hooks: Plugin.Hooks;
   private provider: Aws;
+  private log: Logging['log'];
 
-  constructor(private readonly serverless: Serverless) {
+  constructor(private readonly serverless: Serverless, _options, logging: Logging) {
 
     this.provider = this.serverless.getProvider('aws');
+    this.log = logging.log;
 
     this.commands = {
       s3remove: {
@@ -35,14 +36,6 @@ export default class ServerlessS3Cleaner implements Plugin {
       'before:remove:remove': async () => this.remove(false),
       's3remove:remove': async () => this.remove(false),
     };
-  }
-
-  private log(message: string): void {
-    this.serverless.cli.log(`serverless-s3-cleaner: ${chalk.yellow(message)}`);
-  }
-
-  private logError(message: string): void {
-    this.serverless.cli.log(chalk.red(`serverless-s3-cleaner: ${message}`));
   }
 
   private async remove(isDeploying: boolean): Promise<void> {
@@ -65,7 +58,7 @@ export default class ServerlessS3Cleaner implements Plugin {
         if (confirmed) {
           bucketsToEmpty.push(bucket);
         } else {
-          this.log(`${bucket}: remove skipped`);
+          this.log.notice(`${bucket}: remove skipped`);
         }
       }
     }
@@ -78,7 +71,7 @@ export default class ServerlessS3Cleaner implements Plugin {
       if (exists) {
         existingBuckets.push(bucket);
       } else {
-        this.logError(`${bucket} not found or you do not have permissions, skipping...`);
+        this.log.warning(`${bucket} not found or you do not have permissions, skipping...`);
       }
     }
 
@@ -86,8 +79,8 @@ export default class ServerlessS3Cleaner implements Plugin {
     const removePromises = existingBuckets.map(bucket => this
       .listBucketKeys(bucket)
       .then(keys => this.deleteObjects(bucket, keys))
-      .then(() => this.log(`${bucket} successfully emptied`))
-      .catch(err => this.logError(`${bucket} cannot be emptied. ${err}`)));
+      .then(() => this.log.success(`${bucket} successfully emptied`))
+      .catch(err => this.log.error(`${bucket} cannot be emptied. ${err}`)));
 
     await Promise.all(removePromises);
   }

@@ -2,6 +2,7 @@
 import { DeleteObjectsOutput, DeleteObjectsRequest, ListObjectVersionsOutput, ObjectIdentifier } from 'aws-sdk/clients/s3';
 import prompt from 'prompt';
 import Serverless from 'serverless';
+import { Logging } from 'serverless/classes/Plugin';
 import Aws from 'serverless/plugins/aws/provider/awsProvider';
 import ServerlessS3Cleaner from '../src/index';
 
@@ -9,13 +10,13 @@ describe('ServerlessS3Cleaner', () => {
 
   it('should create the plugin', () => {
     const { serverless } = stubServerlessInstance();
-    const plugin = new ServerlessS3Cleaner(serverless);
+    const plugin = new ServerlessS3Cleaner(serverless, {}, stubLogging());
     expect(plugin).toBeTruthy();
   });
 
   it('should fail when neither buckets nor bucketsToCleanOnDeploy is configured', async () => {
     const { serverless } = stubServerlessInstance({});
-    const plugin = new ServerlessS3Cleaner(serverless);
+    const plugin = new ServerlessS3Cleaner(serverless, {}, stubLogging());
     expect(plugin).toBeTruthy();
 
     const removeFn = plugin.hooks['before:remove:remove'];
@@ -29,7 +30,7 @@ describe('ServerlessS3Cleaner', () => {
       const { requestSpy, serverless } = stubServerlessInstance({
         buckets: ['b1', 'b2'],
       });
-      const plugin = new ServerlessS3Cleaner(serverless);
+      const plugin = new ServerlessS3Cleaner(serverless, {}, stubLogging());
 
       requestSpy.withArgs('S3', 'listObjectVersions', jasmine.anything()).and.resolveTo({
         Versions: [
@@ -65,7 +66,7 @@ describe('ServerlessS3Cleaner', () => {
       const { requestSpy, serverless } = stubServerlessInstance({
         buckets: ['b1'],
       });
-      const plugin = new ServerlessS3Cleaner(serverless);
+      const plugin = new ServerlessS3Cleaner(serverless, {}, stubLogging());
 
       requestSpy.withArgs('S3', 'listObjectVersions', jasmine.anything()).and.resolveTo({
         DeleteMarkers: [
@@ -92,7 +93,7 @@ describe('ServerlessS3Cleaner', () => {
       const { requestSpy, serverless } = stubServerlessInstance({
         buckets: ['b1'],
       });
-      const plugin = new ServerlessS3Cleaner(serverless);
+      const plugin = new ServerlessS3Cleaner(serverless, {}, stubLogging());
 
       let callCount = 0;
       requestSpy.withArgs('S3', 'listObjectVersions', jasmine.anything()).and.callFake(() => ({
@@ -120,7 +121,8 @@ describe('ServerlessS3Cleaner', () => {
       const { requestSpy, serverless } = stubServerlessInstance({
         buckets: ['b1', 'b2'],
       });
-      const plugin = new ServerlessS3Cleaner(serverless);
+      const logging = stubLogging();
+      const plugin = new ServerlessS3Cleaner(serverless, {}, logging);
 
       const errorMsg = 'bad object';
       let callCount = 0;
@@ -143,14 +145,15 @@ describe('ServerlessS3Cleaner', () => {
       expect(requestSpy).not.toHaveBeenCalledWith('S3', 'deleteObjects', jasmine.objectContaining<DeleteObjectsRequest>({
         Bucket: 'b2'
       }));
-      expect(serverless.cli.log).toHaveBeenCalledWith(jasmine.stringMatching(`cannot be emptied. ${errorMsg}`));
+      expect(logging.log.error).toHaveBeenCalledWith(jasmine.stringMatching(`cannot be emptied. ${errorMsg}`));
     });
 
     it('should log a message when deleting bucket objects returns an error response', async () => {
       const { requestSpy, serverless } = stubServerlessInstance({
         buckets: ['b1'],
       });
-      const plugin = new ServerlessS3Cleaner(serverless);
+      const logging = stubLogging();
+      const plugin = new ServerlessS3Cleaner(serverless, {}, logging);
 
       requestSpy.withArgs('S3', 'listObjectVersions', jasmine.anything()).and.resolveTo({
         DeleteMarkers: [
@@ -168,14 +171,15 @@ describe('ServerlessS3Cleaner', () => {
       const removeFn = plugin.hooks['before:remove:remove'];
       await expectAsync(removeFn()).toBeResolved();
 
-      expect(serverless.cli.log).toHaveBeenCalledWith(jasmine.stringMatching('cannot be emptied. Error: obj2 - bad object'));
+      expect(logging.log.error).toHaveBeenCalledWith(jasmine.stringMatching('cannot be emptied. Error: obj2 - bad object'));
     });
 
     it('should skip buckets that do not exist', async () => {
       const { requestSpy, serverless } = stubServerlessInstance({
         buckets: ['b1'],
       });
-      const plugin = new ServerlessS3Cleaner(serverless);
+      const logging = stubLogging();
+      const plugin = new ServerlessS3Cleaner(serverless, {}, logging);
 
       requestSpy.withArgs('S3', 'listObjectVersions', jasmine.anything()).and.resolveTo({});
       requestSpy.withArgs('S3', 'headBucket', jasmine.anything()).and.rejectWith('bad bucket');
@@ -184,14 +188,14 @@ describe('ServerlessS3Cleaner', () => {
       await expectAsync(removeFn()).toBeResolved();
 
       expect(requestSpy).not.toHaveBeenCalledWith('S3', 'listObjectVersions', jasmine.anything());
-      expect(serverless.cli.log).toHaveBeenCalledWith(jasmine.stringMatching('skipping'));
+      expect(logging.log.warning).toHaveBeenCalledWith(jasmine.stringMatching('skipping'));
     });
 
     it('should skip configured bucketsToCleanOnDeploy', async () => {
       const { requestSpy, serverless } = stubServerlessInstance({
         bucketsToCleanOnDeploy: ['b2']
       });
-      const plugin = new ServerlessS3Cleaner(serverless);
+      const plugin = new ServerlessS3Cleaner(serverless, {}, stubLogging());
 
       requestSpy.withArgs('S3', 'listObjectVersions', jasmine.anything()).and.resolveTo({
         Versions: [
@@ -211,7 +215,8 @@ describe('ServerlessS3Cleaner', () => {
         buckets: ['b1', 'b2'],
         prompt: true,
       });
-      const plugin = new ServerlessS3Cleaner(serverless);
+      const logging = stubLogging();
+      const plugin = new ServerlessS3Cleaner(serverless, {}, logging);
 
       requestSpy.withArgs('S3', 'listObjectVersions', jasmine.anything()).and.resolveTo({
         DeleteMarkers: [
@@ -229,12 +234,12 @@ describe('ServerlessS3Cleaner', () => {
       await expectAsync(removeFn()).toBeResolved();
       expect(prompt.start).toHaveBeenCalled();
 
-      expect(serverless.cli.log).not.toHaveBeenCalledWith(jasmine.stringMatching('b1: remove skipped'));
+      expect(logging.log.notice).not.toHaveBeenCalledWith(jasmine.stringMatching('b1: remove skipped'));
       expect(requestSpy).toHaveBeenCalledWith('S3', 'deleteObjects', jasmine.objectContaining<DeleteObjectsRequest>({
         Bucket: 'b1'
       }));
 
-      expect(serverless.cli.log).toHaveBeenCalledWith(jasmine.stringMatching('b2: remove skipped'));
+      expect(logging.log.notice).toHaveBeenCalledWith(jasmine.stringMatching('b2: remove skipped'));
       expect(requestSpy).not.toHaveBeenCalledWith('S3', 'deleteObjects', jasmine.objectContaining<DeleteObjectsRequest>({
         Bucket: 'b2'
       }));
@@ -246,7 +251,7 @@ describe('ServerlessS3Cleaner', () => {
       const { requestSpy, serverless } = stubServerlessInstance({
         buckets: ['b1', 'b2']
       });
-      const plugin = new ServerlessS3Cleaner(serverless);
+      const plugin = new ServerlessS3Cleaner(serverless, {}, stubLogging());
 
       requestSpy.withArgs('S3', 'listObjectVersions', jasmine.anything()).and.resolveTo({
         Versions: [
@@ -270,7 +275,7 @@ describe('ServerlessS3Cleaner', () => {
       const { requestSpy, serverless } = stubServerlessInstance({
         bucketsToCleanOnDeploy: ['b2']
       });
-      const plugin = new ServerlessS3Cleaner(serverless);
+      const plugin = new ServerlessS3Cleaner(serverless, {}, stubLogging());
 
       requestSpy.withArgs('S3', 'listObjectVersions', jasmine.anything()).and.resolveTo({
         Versions: [
@@ -291,7 +296,7 @@ describe('ServerlessS3Cleaner', () => {
       const { requestSpy, serverless } = stubServerlessInstance({
         buckets: ['b1', 'b2']
       });
-      const plugin = new ServerlessS3Cleaner(serverless);
+      const plugin = new ServerlessS3Cleaner(serverless, {}, stubLogging());
 
       requestSpy.withArgs('S3', 'listObjectVersions', jasmine.anything()).and.resolveTo({
         Versions: [
@@ -310,7 +315,7 @@ describe('ServerlessS3Cleaner', () => {
       const { requestSpy, serverless } = stubServerlessInstance({
         bucketsToCleanOnDeploy: ['b1', 'b2']
       });
-      const plugin = new ServerlessS3Cleaner(serverless);
+      const plugin = new ServerlessS3Cleaner(serverless, {}, stubLogging());
 
       requestSpy.withArgs('S3', 'listObjectVersions', jasmine.anything()).and.resolveTo({
         Versions: [
@@ -345,8 +350,18 @@ describe('ServerlessS3Cleaner', () => {
           custom: {
             'serverless-s3-cleaner': config
           }
-        })
+        }),
+        configSchemaHandler: jasmine.createSpyObj(['defineCustomProperties'])
       })
+    };
+  }
+
+  function stubLogging(): { writeText, log: jasmine.SpyObj<Logging['log']> } {
+    return {
+      writeText: undefined,
+      log: jasmine.createSpyObj<Logging['log']>([
+        'error', 'warning', 'success', 'notice'
+      ])
     };
   }
 });
