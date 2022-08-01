@@ -5,7 +5,7 @@ interface ServerlessS3CleanerConfig {
   prompt?: boolean;
 
   /**
-   * Names of buckets to be cleaned up on remove (or by running the s3clean command).
+   * Names of buckets to be cleaned up on remove (or by running the s3remove command).
    */
   buckets?: string[];
 
