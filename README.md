@@ -37,7 +37,7 @@ custom:
     # (optional) Whether to prompt before emptying a bucket. Default is 'false'.
     prompt: false
 
-    # Names of buckets to remove before a stack is removed, or via 'sls s3clean' command
+    # Names of buckets to remove before a stack is removed, or via 'sls s3remove' command
     buckets:
       - bucketName1
       - bucketName2
