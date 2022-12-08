@@ -15,4 +15,10 @@ interface ServerlessS3CleanerConfig {
    * (and can be removed later once the stack has been upgraded).
    */
   bucketsToCleanOnDeploy?: string[];
+
+  /**
+   * Resolve deployment bucket name from AWS. Utilize `serverless.provider.getServerlessDeploymentBucketName`.
+   * Use this flag in case for CI/CD deploying and removing feature stack and so on.
+   */
+  autoResolve?: boolean;
 }
