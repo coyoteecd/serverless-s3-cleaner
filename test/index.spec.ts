@@ -238,7 +238,9 @@ describe('ServerlessS3Cleaner', () => {
       } as ListObjectVersionsOutput);
 
       spyOn(prompt, 'start');
-      spyOn(prompt, 'get').and.resolveTo({
+      // @types/prompt defines overloads in the wrong order
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      spyOn(prompt as any, 'get').and.resolveTo({
         b1: 'yes',
         b2: 'no',
       });
