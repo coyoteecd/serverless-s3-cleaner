@@ -28,6 +28,7 @@ export default class ServerlessS3Cleaner implements Plugin {
       bucketsToCleanOnDeploy: {
         type: 'array', uniqueItems: true, items: { type: 'string' }, nullable: true
       },
+      autoResolve: { type: 'boolean', nullable: true, default: false },
     },
     additionalProperties: false,
     anyOf: [
@@ -66,6 +67,10 @@ export default class ServerlessS3Cleaner implements Plugin {
   private async remove(isDeploying: boolean): Promise<void> {
     const config = this.loadConfig();
     let bucketsToEmpty = isDeploying ? config.bucketsToCleanOnDeploy : config.buckets;
+
+    if (!isDeploying && config.autoResolve) {
+      bucketsToEmpty.push(await this.provider.getServerlessDeploymentBucketName());
+    }
 
     if (config.prompt) {
       prompt.start();
@@ -177,6 +182,7 @@ export default class ServerlessS3Cleaner implements Plugin {
       buckets: providedConfig.buckets || [],
       prompt: providedConfig.prompt || false,
       bucketsToCleanOnDeploy: providedConfig.bucketsToCleanOnDeploy || [],
+      autoResolve: providedConfig.autoResolve || false,
     };
   }
 }

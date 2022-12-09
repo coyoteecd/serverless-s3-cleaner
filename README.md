@@ -45,6 +45,9 @@ custom:
     # (optional) Buckets to remove before a stack is deployed.
     bucketsToCleanOnDeploy:
       - oldBucketName
+
+    # (optional) Get deployment bucket name from AWS. Works only for `sls s3remove` and `sls remove`  
+    autoResolve: false
 ```
 
 When removing a Serverless Framework stack, this plugin automatically empties the buckets listed under `buckets` option.

@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import { DeleteObjectsOutput, DeleteObjectsRequest, ListObjectVersionsOutput, ObjectIdentifier } from 'aws-sdk/clients/s3';
+import { DescribeStackResourceOutput } from 'aws-sdk/clients/cloudformation';
 import prompt from 'prompt';
 import Serverless from 'serverless';
 import { Logging } from 'serverless/classes/Plugin';
@@ -259,6 +260,26 @@ describe('ServerlessS3Cleaner', () => {
         Bucket: 'b2'
       }));
     });
+
+    it('should call getServerlessDeploymentBucketName if autoResolve option is true', async () => {
+      const { requestSpy, serverless } = stubServerlessInstance({
+        buckets: ['b1', 'b2'],
+        autoResolve: true,
+      });
+      const logging = stubLogging();
+      const plugin = new ServerlessS3Cleaner(serverless, {}, logging);
+
+      requestSpy.withArgs('CloudFormation', 'describeStackResource', jasmine.anything()).and.resolveTo({
+        StackResourceDetail: {
+          PhysicalResourceId: 'service-name-stage-serverlessdeploymentbucket-gqzu7wcwjth',
+        }
+      } as DescribeStackResourceOutput);
+
+      const removeFn = plugin.hooks['before:remove:remove'];
+      await expectAsync(removeFn()).toBeResolved();
+
+      expect(requestSpy).toHaveBeenCalled();
+    });
   });
 
   describe('when executing s3remove command', () => {
@@ -357,7 +378,8 @@ describe('ServerlessS3Cleaner', () => {
       requestSpy,
       serverless: jasmine.createSpyObj<Serverless>({
         getProvider: ({
-          request: requestSpy
+          request: requestSpy,
+          getServerlessDeploymentBucketName: requestSpy,
         }) as unknown as Aws,
       }, {
         cli: jasmine.createSpyObj(['log']),
