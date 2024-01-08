@@ -15,7 +15,7 @@ import Aws from 'serverless/plugins/aws/provider/awsProvider';
 export default class ServerlessS3Cleaner implements Plugin {
   public commands: Plugin.Commands;
   public hooks: Plugin.Hooks;
-  private provider: Aws;
+  public provider: Aws;
   private log: Logging['log'];
 
   private configSchema: JSONSchemaType<ServerlessS3CleanerConfig> = {
