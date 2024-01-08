@@ -22,7 +22,10 @@
     "serverless",
     "serverless-plugin",
     "aws",
-    "git"
+    "s3",
+    "bucket",
+    "remover",
+    "cleaner"
   ],
   "author": "coyoteecd",
   "license": "MIT",
